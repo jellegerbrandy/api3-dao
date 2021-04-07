@@ -2,6 +2,7 @@ require("@nomiclabs/hardhat-waffle");
 require("solidity-coverage");
 require("hardhat-deploy");
 require("hardhat-gas-reporter");
+require("hardhat-docgen");
 
 const fs = require("fs");
 let credentials = require("./credentials.example.json");
@@ -23,6 +24,9 @@ module.exports = {
     rinkeby: {
       url: credentials.rinkeby.providerUrl || "",
       accounts: { mnemonic: credentials.rinkeby.mnemonic || "" },
+    },
+    dev: {
+        url: "http://127.0.0.1:8545",
     },
   },
   solidity: {

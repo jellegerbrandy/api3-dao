@@ -3,9 +3,12 @@
   "version": "0.1.0",
   "license": "MIT",
   "scripts": {
+    "start": "hardhat node --as-network hardhat",
     "build": "hardhat compile",
+    "build:docs": "hardhat docgen",
     "deploy:mainnet": "hardhat deploy --network mainnet",
     "deploy:rinkeby": "hardhat deploy --network rinkeby",
+    "deploy:dev": "hardhat deploy --network dev",
     "flatten": "hardhat flatten contracts/Api3Pool.sol > Api3Pool.flat.sol && yarn run flatten:delete-license-lines",
     "flatten:delete-license-lines": "sed --in-place '/SPDX-License-Identifier/d' *.flat.sol",
     "lint": "solium --no-soliumignore --dir ./contracts",
@@ -20,6 +23,7 @@
     "ethereum-waffle": "^3.3.0",
     "hardhat": "^2.1.1",
     "hardhat-deploy": "^0.7.0-beta.46",
+    "hardhat-docgen": "^1.1.0",
     "hardhat-gas-reporter": "^1.0.4",
     "solidity-coverage": "^0.7.16",
     "solium": "^1.2.5"
