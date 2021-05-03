@@ -60,7 +60,7 @@ contract StateUtils is IStateUtils {
     /// to be made for this mechanism to prevent further interactions, which is
     /// not likely to happen in practice due to the proposal spam protection
     /// mechanisms.
-    uint256 public constant MAX_INTERACTION_FREQUENCY = 20;
+    uint256 public constant MAX_INTERACTION_FREQUENCY = 5;
 
     string internal constant ERROR_VALUE = "Invalid value";
     string internal constant ERROR_ADDRESS = "Invalid address";
