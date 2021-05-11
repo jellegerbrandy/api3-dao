@@ -122,9 +122,8 @@ contract('API3 Voting App', ([root, holder1, holder2, holder3, holder4, holder5,
       console.log(`vote by holder29 (expected to fail because it has over 5 delegations`)
       await voting.vote(voteId, true, false, { from: holder29 });
     });
-    it.only('user can create two proposals in an epoch', async () => {
+    it('user can create two proposals in an epoch by propose-delegate-propose', async () => {
       console.log(`balance of holder1`, (await api3Pool.balanceOf(holder1)).toNumber())
-      console.log(`balance of holder2`, (await api3Pool.balanceOf(holder2)).toNumber())
       console.log(`balance of nonHolder`, (await api3Pool.balanceOf(nonHolder)).toNumber())
       console.log(`create a proposal from holder1, cast also the vote`)
       const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: holder1}));
@@ -134,7 +133,12 @@ contract('API3 Voting App', ([root, holder1, holder2, holder3, holder4, holder5,
       console.log(`!!!! Expect vote1.yea to be equal to holder1 balance`)
       console.log(`vote1.yea`, vote1.yea.toNumber())
       console.log(`vote1.nay`, vote1.nay.toNumber())
-      console.log(`!!!! create a proposal from nonHolder, this is expected to fail as the onholder holds no tokens`)
+      console.log(`create a proposal from nonHolder, this is expected to fail as the onholder holds no tokens`)
+      await expectRevert(
+        voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: nonHolder}),
+        "API3_HIT_PROPOSAL_THRESHOLD"
+      );
+
       await api3Pool.delegateVotingPower(nonHolder, {from: holder1});
       const voteId3 = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: nonHolder}));
       const vote3 = (await voting.getVote(voteId3))
@@ -143,6 +147,22 @@ contract('API3 Voting App', ([root, holder1, holder2, holder3, holder4, holder5,
       console.log(`vote3.nay`, vote3.nay.toNumber())
       console.log(`vote3.votingPower`, vote3.votingPower.toNumber())
     });
-  });
+
+    it.only('user can vote twice vote-delegate-vote', async () => {
+      console.log(`balance of holder1`, (await api3Pool.balanceOf(holder1)).toNumber())
+      console.log(`balance of nonHolder`, (await api3Pool.balanceOf(nonHolder)).toNumber())
+      console.log(`create a proposal from holder1, cast also the vote`)
+      const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: holder1}));
+      let vote1 = (await voting.getVote(voteId))
+      console.log(`vote1.yea`, vote1.yea.toNumber())
+      console.log(`vote1.nay`, vote1.nay.toNumber())
+      console.log(`delegate voting power from holder1 to nonholder`)
+      await api3Pool.delegateVotingPower(nonHolder, {from: holder1});
+      await voting.vote(voteId, true, false, {from: nonHolder})
+      vote1 = (await voting.getVote(voteId))
+      console.log(`vote1.yea`, vote1.yea.toNumber())
+      console.log(`vote1.nay`, vote1.nay.toNumber())
+    });
+   });
 
 });
