@@ -52,9 +52,9 @@ contract('API3 Voting App', ([root, holder1, holder2, holder3, holder4, holder5,
       let holders = [holder1, holder2, holder3, holder4, holder5, holder6, holder7, holder8, holder9, holder10, holder29];
       for (let holder of holders) {
         await token.generateTokens(holder, 1000000);
-        await token.approve(api3Pool.address, 1, {from: holder});
-        await api3Pool.deposit(holder, 1, holder, {from: holder});
-        await api3Pool.stake(1, {from: holder});
+        await token.approve(api3Pool.address, 1000, {from: holder});
+        await api3Pool.deposit(holder, 1000, holder, {from: holder});
+        await api3Pool.stake(1000, {from: holder});
       }
 
       await voting.initialize(api3Pool.address, neededSupport, minimumAcceptanceQuorum, votingDuration);
@@ -127,7 +127,7 @@ contract('API3 Voting App', ([root, holder1, holder2, holder3, holder4, holder5,
       console.log(`balance of holder2`, (await api3Pool.balanceOf(holder2)).toNumber())
       console.log(`balance of nonHolder`, (await api3Pool.balanceOf(nonHolder)).toNumber())
       console.log(`create a proposal from holder1, cast also the vote`)
-      const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', true, true), {from: holder1});
+      const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: holder1}));
       const vote1 = (await voting.getVote(voteId))
       console.log(`vote1.snapshotBlock`, vote1.snapshotBlock.toNumber())
       console.log(`vote1.votingPower`, vote1.votingPower.toNumber())
@@ -135,6 +135,7 @@ contract('API3 Voting App', ([root, holder1, holder2, holder3, holder4, holder5,
       console.log(`vote1.yea`, vote1.yea.toNumber())
       console.log(`vote1.nay`, vote1.nay.toNumber())
       console.log(`!!!! create a proposal from nonHolder, this is expected to fail as the onholder holds no tokens`)
+      await api3Pool.delegateVotingPower(nonHolder, {from: holder1});
       const voteId3 = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: nonHolder}));
       const vote3 = (await voting.getVote(voteId3))
       console.log(`vote3.snapshotBlock`, vote3.snapshotBlock.toNumber())
