@@ -17,7 +17,7 @@ const VOTER_STATE = ['ABSENT', 'YEA', 'NAY'].reduce((state, key, index) => {
 }, {});
 
 
-contract('API3 Voting App', ([root, holder1, holder2, holder3, holder4, holder5, holder6, holder7, holder8, holder9, holder10, holder29, holder51, nonHolder]) => {
+contract('API3 Voting App', ([root, holder1, holder2, holder3, holder4, holder5, holder6, holder7, holder8, holder9, holder10, holder29, nonHolder, nonHolder1]) => {
   let api3Pool, votingBase, voting, token, executionTarget;
   let CREATE_VOTES_ROLE, MODIFY_SUPPORT_ROLE, MODIFY_QUORUM_ROLE;
 
@@ -140,15 +140,16 @@ contract('API3 Voting App', ([root, holder1, holder2, holder3, holder4, holder5,
       );
 
       await api3Pool.delegateVotingPower(nonHolder, {from: holder1});
+      console.log(`now create a second proposal with nonholder`)
       const voteId3 = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: nonHolder}));
       const vote3 = (await voting.getVote(voteId3))
-      console.log(`vote3.snapshotBlock`, vote3.snapshotBlock.toNumber())
-      console.log(`vote3.yea`, vote3.yea.toNumber())
-      console.log(`vote3.nay`, vote3.nay.toNumber())
-      console.log(`vote3.votingPower`, vote3.votingPower.toNumber())
+      // console.log(`vote3.snapshotBlock`, vote3.snapshotBlock.toNumber())
+      // console.log(`vote3.yea`, vote3.yea.toNumber())
+      // console.log(`vote3.nay`, vote3.nay.toNumber())
+      // console.log(`vote3.votingPower`, vote3.votingPower.toNumber())
     });
 
-    it.only('user can vote twice vote-delegate-vote', async () => {
+    it('user can vote twice vote-delegate-vote', async () => {
       console.log(`balance of holder1`, (await api3Pool.balanceOf(holder1)).toNumber())
       console.log(`balance of nonHolder`, (await api3Pool.balanceOf(nonHolder)).toNumber())
       console.log(`create a proposal from holder1, cast also the vote`)
@@ -157,12 +158,68 @@ contract('API3 Voting App', ([root, holder1, holder2, holder3, holder4, holder5,
       console.log(`vote1.yea`, vote1.yea.toNumber())
       console.log(`vote1.nay`, vote1.nay.toNumber())
       console.log(`delegate voting power from holder1 to nonholder`)
+      console.log(`balance of nonHolder at snapshotblcok`, (await api3Pool.balanceOfAt(nonHolder, vote1.snapshotBlock)).toNumber())
       await api3Pool.delegateVotingPower(nonHolder, {from: holder1});
+      console.log(`balance of nonHolder`, (await api3Pool.balanceOf(nonHolder)).toNumber())
+      console.log(`balance of nonHolder at vote1.snapshotblcok`, (await api3Pool.balanceOfAt(nonHolder, vote1.snapshotBlock)).toNumber())
+      console.log(`let nonholder vote`)
       await voting.vote(voteId, true, false, {from: nonHolder})
       vote1 = (await voting.getVote(voteId))
       console.log(`vote1.yea`, vote1.yea.toNumber())
       console.log(`vote1.nay`, vote1.nay.toNumber())
-    });
-   });
 
+      // why does it not work for a second time??
+      await api3Pool.delegateVotingPower(nonHolder1, {from: nonHolder});
+      // await voting.vote(voteId, true, false, {from: nonHolder1})
+      // vote1 = (await voting.getVote(voteId))
+      // console.log(`vote1.yea`, vote1.yea.toNumber())
+     });
+
+     it.only('???? make voting pwoer disappear???', async () => {
+      console.log(`balance of holder1`, (await api3Pool.balanceOf(holder1)).toNumber())
+      console.log(`balance of nonHolder`, (await api3Pool.balanceOf(nonHolder)).toNumber())
+      console.log(`balance of nonHolder1`, (await api3Pool.balanceOf(nonHolder1)).toNumber())
+      console.log(`create a proposal from holder1, cast also the vote`)
+      // const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: holder1}));
+      console.log(`delegate voting power from holder1 to nonholder`)
+      await api3Pool.delegateVotingPower(nonHolder, {from: holder1});
+      console.log(`balance of holder1`, (await api3Pool.balanceOf(holder1)).toNumber())
+      console.log(`balance of nonHolder`, (await api3Pool.balanceOf(nonHolder)).toNumber())
+      console.log(`balance of nonHolder1`, (await api3Pool.balanceOf(nonHolder1)).toNumber())
+
+      // console.log(`balance of nonHolder at vote1.snapshotblcok`, (await api3Pool.balanceOfAt(nonHolder, vote1.snapshotBlock)).toNumber())
+
+
+      console.log(`delegate voting power from nonholder to nonholder1`)
+      await api3Pool.delegateVotingPower(nonHolder1, {from: nonHolder});
+      console.log(`balance of holder1`, (await api3Pool.balanceOf(holder1)).toNumber())
+      console.log(`balance of nonHolder`, (await api3Pool.balanceOf(nonHolder)).toNumber())
+      console.log(`balance of nonHolder1`, (await api3Pool.balanceOf(nonHolder1)).toNumber())
+
+      // console.log(`balance of nonHolder at vote1.snapshotblcok`, (await api3Pool.balanceOfAt(nonHolder, vote1.snapshotBlock)).toNumber())
+      // console.log(`balance of nonHolder1 at vote1.snapshotblcok`, (await api3Pool.balanceOfAt(nonHolder1, vote1.snapshotBlock)).toNumber())
+      // console.log(`balance of nonHolder1 `, (await api3Pool.balanceOf(nonHolder1)).toNumber())
+      // console.log(`balance of holder1 `, (await api3Pool.balanceOf(holder1)).toNumber())
+      // console.log(`balance of nonHolder `, (await api3Pool.balanceOf(nonHolder)).toNumber())
+     });
+   it.skip("user can vote even if staking after the proposal was created", async() => {
+      console.log(`create a proposal from holder1, do not cast the vote`)
+      const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: holder1}));
+      let vote1 = (await voting.getVote(voteId))
+      console.log(`vote1.yea`, vote1.yea.toNumber())
+      console.log(`vote1.nay`, vote1.nay.toNumber())
+      await token.generateTokens(nonHolder, 1000000);
+    await token.approve(api3Pool.address, 1000000, {from: nonHolder});
+    await api3Pool.deposit(nonHolder, 1000000, nonHolder, {from: nonHolder});
+        await api3Pool.stake(1000000, {from: nonHolder});
+      console.log(`balance of nonHolder`, (await api3Pool.balanceOf(nonHolder)).toNumber())
+      console.log(`balance of nonHolder at snapshotblcok`, (await api3Pool.balanceOfAt(nonHolder, vote1.snapshotBlock)).toNumber())
+      await voting.vote(voteId, true, false, {from: nonHolder})
+      vote1 = (await voting.getVote(voteId))
+      console.log(`vote1.yea`, vote1.yea.toNumber())
+      console.log(`vote1.nay`, vote1.nay.toNumber())
+ 
+   })
+
+   });
 });
