@@ -154,15 +154,14 @@ contract('API3 Voting App', ([root, holder1, holder2, holder3, holder4, holder5,
       console.log(`balance of nonHolder`, (await api3Pool.balanceOf(nonHolder)).toNumber())
       console.log(`create a proposal from holder1, cast also the vote`)
       const voteId = createdVoteId(await voting.newVote(EMPTY_CALLS_SCRIPT, 'metadata', {from: holder1}));
+      await voting.vote(voteId, true, false, {from: holder2})
       let vote1 = (await voting.getVote(voteId))
       console.log(`vote1.yea`, vote1.yea.toNumber())
       console.log(`vote1.nay`, vote1.nay.toNumber())
       console.log(`delegate voting power from holder1 to nonholder`)
       console.log(`balance of nonHolder at snapshotblcok`, (await api3Pool.balanceOfAt(nonHolder, vote1.snapshotBlock)).toNumber())
       await api3Pool.delegateVotingPower(nonHolder, {from: holder1});
-      console.log(`balance of nonHolder`, (await api3Pool.balanceOf(nonHolder)).toNumber())
-      console.log(`balance of nonHolder at vote1.snapshotblcok`, (await api3Pool.balanceOfAt(nonHolder, vote1.snapshotBlock)).toNumber())
-      console.log(`let nonholder vote`)
+      await api3Pool.delegateVotingPower(nonHolder, {from: holder2});
       await voting.vote(voteId, true, false, {from: nonHolder})
       vote1 = (await voting.getVote(voteId))
       console.log(`vote1.yea`, vote1.yea.toNumber())
